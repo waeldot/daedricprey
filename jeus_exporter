@@ -1,0 +1,81 @@
+#!/home/hisisJ/python3/bin/python3
+
+import prometheus_client as prom
+import subprocess
+import re
+import time
+from socket import gethostname
+
+
+class JeusadminConnector():
+    def __init__(self, jeusdir="/data/webapps/JEUS", adminport="12000", credential="/bin/scripts/jeusEncode", listener="webtob1"):
+        self.vhost = "FO" if re.search(r'FO|fo', gethostname()) else "MO"
+        self.jeusc = jeusdir+"/bin/jeusadmin -host 127.0.0.1:"+adminport+" -f "+jeusdir+credential+" "
+        self.listener = listener
+
+    def exec_cmd(self, cmd="help"):
+        cmd_result = subprocess.run(self.jeusc+cmd, stdout=subprocess.PIPE, shell=True)
+        return cmd_result.stdout.decode("utf-8")
+
+    def get_stats(self):
+        _metrics = []
+        _vhost = " "+self.vhost
+        cmd_result_stdout = self.exec_cmd(cmd="si")
+        for r in cmd_result_stdout.splitlines():
+            if re.search(_vhost, r) is not None:
+                _row = r.split('|')
+                _metric = {"name":"", "state":"", "cpu":0, "heap":0, "thread_active":0, "thread_blocked":0}
+                _metric["name"] = _row[1].strip()
+                _metric["state"] = _row[2].strip()
+
+                resource_usage_stdout = self.exec_cmd(cmd="'system-info "+_metric["name"]+"'").splitlines()
+                for r in resource_usage_stdout:
+                    if re.search(r'CPU Percent', r) is not None:
+                        _row = r.split('|')
+                        _metric["cpu"] = _row[2].split()[0]
+                for r in resource_usage_stdout:
+                    if re.search(r'Current Used Heap Memory Ratio', r) is not None:
+                        _row = r.split('|')
+                        _metric["heap"] = _row[2].split()[0]
+                thread_status_stdout = self.exec_cmd(cmd="'thread-info -server "+_metric["name"]+" -li "+self.listener+" -os'").splitlines()
+                for r in thread_status_stdout:
+                    if re.search(r'The number of threads', r) is not None:
+                        _row = r.split('|')
+                        _metric["thread_active"] += int(_row[3])
+                        _metric["thread_blocked"] += int(_row[5])
+                _metrics.append(_metric)
+
+        return _metrics
+
+
+class PromClient():
+    def __init__(self, jeusc):
+        self.jeusc = jeusc
+        prom.start_http_server(9102)
+        self.gauge_state = prom.Gauge("jeus_process_state", "jeus_process_state", ["app", "process"])
+        self.gauge_cpu = prom.Gauge("jeus_process_cpu_usage_percent", "jeus_process_cpu_usage_percent", ["app", "process"])
+        self.gauge_heap = prom.Gauge("jeus_process_heap_usage_percent", "jeus_process_heap_usage_percent", ["app", "process"])
+        self.gauge_thread_active = prom.Gauge("jeus_active_thread_count", "jeus_active_thread_count", ["app", "process"])
+        self.gauge_thread_blocked = prom.Gauge("jeus_blocked_thread_count", "jeus_blocked_thread_count", ["app", "process"])
+
+    def get_value(self):
+        output = self.jeusc.get_stats()
+        for r in output:
+            if re.match(r'SHUTDOWN', r["state"]) is not None: _state = 0
+            elif re.match(r'RUNNING', r["state"]) is not None: _state = 1
+            elif re.match(r'STANDBY', r["state"]) is not None: _state = 2
+            elif re.match(r'FAILED', r["state"]) is not None: _state = 3
+            else: _state = 4 ##other states
+
+            self.gauge_state.labels(app=self.jeusc.vhost, process=r["name"]).set(_state)
+            self.gauge_cpu.labels(app=self.jeusc.vhost, process=r["name"]).set(r["cpu"])
+            self.gauge_heap.labels(app=self.jeusc.vhost, process=r["name"]).set(r["heap"])
+            self.gauge_thread_active.labels(app=self.jeusc.vhost, process=r["name"]).set(r["thread_active"])
+            self.gauge_thread_blocked.labels(app=self.jeusc.vhost, process=r["name"]).set(r["thread_blocked"])
+
+con = JeusadminConnector()
+xptr = PromClient(con)
+
+while True:
+    xptr.get_value()
+    time.sleep(60)

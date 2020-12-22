@@ -1,0 +1,42 @@
+#!/bin/bash
+
+
+BASEDIR="$HOME/python3/app"
+DAEMON="$BASEDIR/$1"
+DAEMON_ARGS=""
+PIDFILE="$BASEDIR/$1.pid"
+LOGFILE="$BASEDIR/$1.log"
+
+case "$2" in
+    start)
+        date >> $LOGFILE
+        nohup $DAEMON >> $LOGFILE &
+	sleep 1
+        pgrep -f $DAEMON > $PIDFILE
+        $0 status
+        ;;
+    stop)
+        sh -c "kill $( cat $PIDFILE )"
+        sh -c "rm $PIDFILE"
+        $0 status
+        ;;
+    status)
+        if [ -f $PIDFILE ]; then
+            echo ""
+            ps -p $( cat $PIDFILE ) -o pid,stime,cmd
+            if [ $? == 0 ]; then 
+                echo -e "\nSTATE: RUNNING\n"
+            else
+                sh -c "rm $PIDFILE"
+                $0 status
+            fi     
+        else
+            APP_PID=$( pgrep -f $DAEMON )
+            if [ -z $APP_PID ]; then
+                echo -e "\nSTATE: STOPPED\n"
+            else    
+                echo -e "\nSTATE: RUNNING as Different PID: $APP_PID\n"
+            fi    
+        fi;;
+esac       
+

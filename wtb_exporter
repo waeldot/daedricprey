@@ -1,0 +1,59 @@
+#!/home/hisisJ/python3/bin/python3
+
+import prometheus_client as prom
+import subprocess
+import re
+import time
+from socket import gethostname
+
+
+class WTBadminConnector():
+    def __init__(self, wtbdir="/data/webapps/WebToB"):
+        self.vhost = "fo" if re.search(r'FO|fo', gethostname()) else "mo"
+        self.wtbc = "export WEBTOBDIR="+wtbdir+"; $WEBTOBDIR/bin/wsadmin -C "
+
+    def exec_cmd(self, cmd="help"):
+        cmd_result = subprocess.run(self.wtbc+cmd, stdout=subprocess.PIPE, shell=True)
+        return cmd_result.stdout.decode("utf-8")
+
+    def get_stats(self):
+        _metrics = []
+        _vhost = " "+self.vhost+" "
+        cmd_result_stdout = self.exec_cmd(cmd="si")
+        for r in cmd_result_stdout.splitlines():
+            if re.search(_vhost, r) is not None: 
+                _row = r.split()
+                _metric = {"hth":"", "req":0, "resp":0, "curq":0, "tmoutq":0} 
+                _metric["hth"] = _row[0]
+                _metric["req"] = _row[5]
+                _metric["resp"] = _row[6]
+                _metric["curq"] = _row[7]
+                _metric["tmout1"] = _row[9]
+                _metrics.append(_metric)
+
+        return _metrics
+             
+      
+class PromClient():
+    def __init__(self, wtbc):
+        self.wtbc = wtbc 
+        prom.start_http_server(9101)
+        self.gauge_req = prom.Gauge("wtb_http_requests", "number of http requests to webtob", ["app", "hth"])
+        self.gauge_resp = prom.Gauge("wtb_http_responses", "number of http responses to webtob", ["app", "hth"])
+        self.gauge_curq = prom.Gauge("wtb_http_current_queue_count", "number of waiting objects in a queue of webtob", ["app", "hth"])
+        self.gauge_tmoutq = prom.Gauge("wtb_http_timeout_queue_count", "number of dropped objects in a queue of  webtob", ["app", "hth"])
+
+    def get_value(self):
+        output = self.wtbc.get_stats()
+        for r in output:
+            self.gauge_req.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["req"])
+            self.gauge_resp.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["resp"])
+            self.gauge_curq.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["curq"])
+            self.gauge_tmoutq.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["tmoutq"])
+
+con = WTBadminConnector()
+xptr = PromClient(con)
+
+while True:
+    xptr.get_value()
+    time.sleep(3)
