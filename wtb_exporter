@@ -1,13 +1,20 @@
-#!/home/hisisJ/python3/bin/python3
+#!/home/hisisJ/python3/bin/python
 
-import prometheus_client as prom
+"""
+built and tested on only WebToB4
+"""
+
 import subprocess
 import re
 import time
 from socket import gethostname
+import prometheus_client as prom
 
 
-class WebToBadminConnector():
+class WebToBadminConnector:
+    """
+    using WebToB CLI tool 'wsadmin'
+    """
     def __init__(self, wtbdir="/data/webapps/WebToB"):
         self.vhost = "fo" if re.search(r'FO|fo', gethostname()) else "mo"
         self.wtbc = "export WEBTOBDIR="+wtbdir+"; $WEBTOBDIR/bin/wsadmin -C "
@@ -17,26 +24,24 @@ class WebToBadminConnector():
         return cmd_result.stdout.decode("utf-8")
 
     def get_stats(self):
-        _metrics = []
-        _vhost = " "+self.vhost+" "
+        metrics = []
+        vhost = " " + self.vhost + " "
+        # get cli-format output then parse it
         cmd_result_stdout = self.exec_cmd(cmd="si")
-        for r in cmd_result_stdout.splitlines():
-            if re.search(_vhost, r) is not None: 
-                _row = r.split()
-                _metric = {"hth":"", "req":0, "resp":0, "curq":0, "tmoutq":0} 
-                _metric["hth"] = _row[0]
-                _metric["req"] = _row[5]
-                _metric["resp"] = _row[6]
-                _metric["curq"] = _row[7]
-                _metric["tmout1"] = _row[9]
-                _metrics.append(_metric)
+        for row in cmd_result_stdout.splitlines():
+            if re.search(vhost, row) is not None:
+                split_row = row.split()
+                metric = {"hth": split_row[0], "req": split_row[5], "resp": split_row[6], "curq": split_row[7], "tmoutq": split_row[9]}
+                metrics.append(metric)
+        return metrics
 
-        return _metrics
-             
-      
-class PromClient():
+
+class PromClient:
+    """
+    export metrics of current WebToB status
+    """
     def __init__(self, wtbc):
-        self.wtbc = wtbc 
+        self.wtbc = wtbc
         prom.start_http_server(9101)
         self.gauge_req = prom.Gauge("wtb_http_requests", "number of http requests to webtob", ["app", "hth"])
         self.gauge_resp = prom.Gauge("wtb_http_responses", "number of http responses to webtob", ["app", "hth"])
@@ -45,11 +50,11 @@ class PromClient():
 
     def get_value(self):
         output = self.wtbc.get_stats()
-        for r in output:
-            self.gauge_req.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["req"])
-            self.gauge_resp.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["resp"])
-            self.gauge_curq.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["curq"])
-            self.gauge_tmoutq.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["tmoutq"])
+        for row in output:
+            self.gauge_req.labels(app=self.wtbc.vhost, hth=row["hth"]).set(row["req"])
+            self.gauge_resp.labels(app=self.wtbc.vhost, hth=row["hth"]).set(row["resp"])
+            self.gauge_curq.labels(app=self.wtbc.vhost, hth=row["hth"]).set(row["curq"])
+            self.gauge_tmoutq.labels(app=self.wtbc.vhost, hth=row["hth"]).set(row["tmoutq"])
 
 
 con = WebToBadminConnector()
