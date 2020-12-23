@@ -7,7 +7,7 @@ import time
 from socket import gethostname
 
 
-class WTBadminConnector():
+class WebToBadminConnector():
     def __init__(self, wtbdir="/data/webapps/WebToB"):
         self.vhost = "fo" if re.search(r'FO|fo', gethostname()) else "mo"
         self.wtbc = "export WEBTOBDIR="+wtbdir+"; $WEBTOBDIR/bin/wsadmin -C "
@@ -51,7 +51,8 @@ class PromClient():
             self.gauge_curq.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["curq"])
             self.gauge_tmoutq.labels(app=self.wtbc.vhost, hth=r["hth"]).set(r["tmoutq"])
 
-con = WTBadminConnector()
+
+con = WebToBadminConnector()
 xptr = PromClient(con)
 
 while True:
