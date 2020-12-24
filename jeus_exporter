@@ -81,11 +81,11 @@ class PromClient:
             else:
                 # for other states
                 state = 4
-            self.gauge_state.labels(app=self.jeusc.vhost, process=row["name"]).set(state)
-            self.gauge_cpu.labels(app=self.jeusc.vhost, process=row["name"]).set(row["cpu"])
-            self.gauge_heap.labels(app=self.jeusc.vhost, process=row["name"]).set(row["heap"])
-            self.gauge_thread_active.labels(app=self.jeusc.vhost, process=row["name"]).set(row["thread_active"])
-            self.gauge_thread_blocked.labels(app=self.jeusc.vhost, process=row["name"]).set(row["thread_blocked"])
+            self.gauge_state.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(state)
+            self.gauge_cpu.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(row["cpu"])
+            self.gauge_heap.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(row["heap"])
+            self.gauge_thread_active.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(row["thread_active"])
+            self.gauge_thread_blocked.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(row["thread_blocked"])
 
 
 con = JeusadminConnector()

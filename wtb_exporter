@@ -16,7 +16,8 @@ class WebToBadminConnector:
     using WebToB CLI tool 'wsadmin'
     """
     def __init__(self, wtbdir="/data/webapps/WebToB"):
-        self.vhost = "fo" if re.search(r'FO|fo', gethostname()) else "mo"
+        self.hostname = gethostname()
+        self.wtbsvr = "fo" if re.search(r'FO|fo', self.hostname) else "mo"
         self.wtbc = "export WEBTOBDIR="+wtbdir+"; $WEBTOBDIR/bin/wsadmin -C "
 
     def exec_cmd(self, cmd="help"):
@@ -25,11 +26,11 @@ class WebToBadminConnector:
 
     def get_stats(self):
         metrics = []
-        vhost = " " + self.vhost + " "
+        wtbsvr = " "+self.wtbsvr+" "
         # get cli-format output then parse it
         cmd_result_stdout = self.exec_cmd(cmd="si")
         for row in cmd_result_stdout.splitlines():
-            if re.search(vhost, row) is not None:
+            if re.search(wtbsvr, row) is not None:
                 split_row = row.split()
                 metric = {"hth": split_row[0], "req": split_row[5], "resp": split_row[6], "curq": split_row[7], "tmoutq": split_row[9]}
                 metrics.append(metric)
@@ -42,19 +43,21 @@ class PromClient:
     """
     def __init__(self, wtbc):
         self.wtbc = wtbc
+        self.hostname = wtbc.hostname
+        # start client and set metric attributes
         prom.start_http_server(9101)
-        self.gauge_req = prom.Gauge("wtb_http_requests", "number of http requests to webtob", ["app", "hth"])
-        self.gauge_resp = prom.Gauge("wtb_http_responses", "number of http responses to webtob", ["app", "hth"])
-        self.gauge_curq = prom.Gauge("wtb_http_current_queue_count", "number of waiting objects in a queue of webtob", ["app", "hth"])
-        self.gauge_tmoutq = prom.Gauge("wtb_http_timeout_queue_count", "number of dropped objects in a queue of  webtob", ["app", "hth"])
+        self.gauge_req = prom.Gauge("wtb_http_requests", "number of http requests to webtob", ["hostname", "hth"])
+        self.gauge_resp = prom.Gauge("wtb_http_responses", "number of http responses to webtob", ["hostname", "hth"])
+        self.gauge_curq = prom.Gauge("wtb_http_current_queue_count", "number of waiting objects in a queue of webtob", ["hostname", "hth"])
+        self.gauge_tmoutq = prom.Gauge("wtb_http_timeout_queue_count", "number of dropped objects in a queue of  webtob", ["hostname", "hth"])
 
     def get_value(self):
         output = self.wtbc.get_stats()
         for row in output:
-            self.gauge_req.labels(app=self.wtbc.vhost, hth=row["hth"]).set(row["req"])
-            self.gauge_resp.labels(app=self.wtbc.vhost, hth=row["hth"]).set(row["resp"])
-            self.gauge_curq.labels(app=self.wtbc.vhost, hth=row["hth"]).set(row["curq"])
-            self.gauge_tmoutq.labels(app=self.wtbc.vhost, hth=row["hth"]).set(row["tmoutq"])
+            self.gauge_req.labels(hostname=self.hostname, hth=row["hth"]).set(row["req"])
+            self.gauge_resp.labels(hostname=self.hostname, hth=row["hth"]).set(row["resp"])
+            self.gauge_curq.labels(hostname=self.hostname, hth=row["hth"]).set(row["curq"])
+            self.gauge_tmoutq.labels(hostname=self.hostname, hth=row["hth"]).set(row["tmoutq"])
 
 
 con = WebToBadminConnector()
