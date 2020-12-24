@@ -16,7 +16,7 @@ class JeusadminConnector:
     using JEUS CLI tool 'jeusadmin'
     """
     def __init__(self, jeusdir="/data/webapps/JEUS", adminport="12000", credential="/bin/scripts/jeusEncode", listener="webtob1"):
-        self.hostname = wtbc.hostname
+        self.hostname = gethostname()
         self.jeus_msvr = "FO" if re.search(r'FO|fo', self.hostname) else "MO"
         self.jeusc = jeusdir + "/bin/jeusadmin -host 127.0.0.1:" + adminport + " -f " + jeusdir + credential + " "
         self.listener = listener
