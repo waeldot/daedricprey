@@ -17,7 +17,7 @@ class WebToBadminConnector:
     """
     def __init__(self, wtbdir="/data/webapps/WebToB"):
         self.hostname = gethostname()
-        self.wtbsvr = "fo" if re.search(r'FO|fo', self.hostname) else "mo"
+        self.wtb_vsvr = "fo" if re.search(r'FO|fo', self.hostname) else "mo"
         self.wtbc = "export WEBTOBDIR="+wtbdir+"; $WEBTOBDIR/bin/wsadmin -C "
 
     def exec_cmd(self, cmd="help"):
@@ -26,7 +26,7 @@ class WebToBadminConnector:
 
     def get_stats(self):
         metrics = []
-        wtbsvr = " "+self.wtbsvr+" "
+        wtbsvr = " " + self.wtb_vsvr + " "
         # get cli-format output then parse it
         cmd_result_stdout = self.exec_cmd(cmd="si")
         for row in cmd_result_stdout.splitlines():
@@ -44,7 +44,7 @@ class PromClient:
     def __init__(self, wtbc):
         self.wtbc = wtbc
         self.hostname = wtbc.hostname
-        self.frontend = "PC" if wtbc.wtbsvr == "fo" else "Mobile"
+        self.frontend = "PC" if wtbc.wtb_vsvr == "fo" else "Mobile"
         # start client and set metric attributes
         prom.start_http_server(9101)
         self.gauge_req = prom.Gauge("wtb_http_requests", "number of http requests to webtob", ["frontend", "hostname", "hth"])

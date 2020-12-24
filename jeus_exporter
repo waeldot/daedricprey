@@ -16,7 +16,7 @@ class JeusadminConnector:
     using JEUS CLI tool 'jeusadmin'
     """
     def __init__(self, jeusdir="/data/webapps/JEUS", adminport="12000", credential="/bin/scripts/jeusEncode", listener="webtob1"):
-        self.vhost = "FO" if re.search(r'FO|fo', gethostname()) else "MO"
+        self.jeus_msvr = "FO" if re.search(r'FO|fo', gethostname()) else "MO"
         self.jeusc = jeusdir + "/bin/jeusadmin -host 127.0.0.1:" + adminport + " -f " + jeusdir + credential + " "
         self.listener = listener
 
@@ -26,7 +26,7 @@ class JeusadminConnector:
 
     def get_stats(self):
         metrics = []
-        vhost = " " + self.vhost
+        vhost = " " + self.jeus_msvr
         # get cli-format output then parse it
         cmd_result_stdout = self.exec_cmd(cmd="si")
         for row in cmd_result_stdout.splitlines():
@@ -60,12 +60,13 @@ class PromClient:
     """
     def __init__(self, jeusc):
         self.jeusc = jeusc
+        self.frontend = "PC" if jeusc.jeus_msvr == "FO" else "Mobile"
         prom.start_http_server(9102)
-        self.gauge_state = prom.Gauge("jeus_process_state", "jeus_process_state", ["app", "process"])
-        self.gauge_cpu = prom.Gauge("jeus_process_cpu_usage_percent", "jeus_process_cpu_usage_percent", ["app", "process"])
-        self.gauge_heap = prom.Gauge("jeus_process_heap_usage_percent", "jeus_process_heap_usage_percent", ["app", "process"])
-        self.gauge_thread_active = prom.Gauge("jeus_active_thread_count", "jeus_active_thread_count", ["app", "process"])
-        self.gauge_thread_blocked = prom.Gauge("jeus_blocked_thread_count", "jeus_blocked_thread_count", ["app", "process"])
+        self.gauge_state = prom.Gauge("jeus_process_state", "jeus_process_state", ["frontend", "jeus_ms"])
+        self.gauge_cpu = prom.Gauge("jeus_process_cpu_usage_percent", "jeus_process_cpu_usage_percent", ["frontend", "jeus_ms"])
+        self.gauge_heap = prom.Gauge("jeus_process_heap_usage_percent", "jeus_process_heap_usage_percent", ["frontend", "jeus_ms"])
+        self.gauge_thread_active = prom.Gauge("jeus_active_thread_count", "jeus_active_thread_count", ["frontend", "jeus_ms"])
+        self.gauge_thread_blocked = prom.Gauge("jeus_blocked_thread_count", "jeus_blocked_thread_count", ["frontend", "jeus_ms"])
 
     def get_value(self):
         output = self.jeusc.get_stats()
@@ -81,11 +82,11 @@ class PromClient:
             else:
                 # for other states
                 state = 4
-            self.gauge_state.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(state)
-            self.gauge_cpu.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(row["cpu"])
-            self.gauge_heap.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(row["heap"])
-            self.gauge_thread_active.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(row["thread_active"])
-            self.gauge_thread_blocked.labels(app=self.jeusc.wtbsvr, process=row["name"]).set(row["thread_blocked"])
+            self.gauge_state.labels(frontend=self.frontend, jeus_ms=row["name"]).set(state)
+            self.gauge_cpu.labels(frontend=self.frontend, jeus_ms=row["name"]).set(row["cpu"])
+            self.gauge_heap.labels(frontend=self.frontend, jeus_ms=row["name"]).set(row["heap"])
+            self.gauge_thread_active.labels(frontend=self.frontend, jeus_ms=row["name"]).set(row["thread_active"])
+            self.gauge_thread_blocked.labels(frontend=self.frontend, jeus_ms=row["name"]).set(row["thread_blocked"])
 
 
 con = JeusadminConnector()
