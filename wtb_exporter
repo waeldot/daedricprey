@@ -17,7 +17,6 @@ class WebToBadminConnector:
     using WebToB CLI tool 'wsadmin'
     """
     def __init__(self, wtb_dir, wtb_svr):
-        #self.hostname = gethostname()
         self.wtb_svr = wtb_svr #"fo" if re.search(r'FO|fo', self.hostname) else "mo"
         self.wtbc = "export WEBTOBDIR="+wtb_dir+"; $WEBTOBDIR/bin/wsadmin -C "
 
@@ -27,7 +26,6 @@ class WebToBadminConnector:
 
     def get_stats(self):
         metrics = []
-        #wtbs_vr = " " + self.wtb_svr + " "
         # get cli-format output then parse it
         cmd_result_stdout = self.exec_cmd(cmd="si "+self.wtb_svr)
         for row in cmd_result_stdout.splitlines():
@@ -36,10 +34,6 @@ class WebToBadminConnector:
             if len(split_row) == 13 and split_row[1] == self.wtb_svr:
                 metric = {"hth": split_row[0], "req": split_row[5], "resp": split_row[6], "curq": split_row[7], "tmoutq": split_row[9]}
                 metrics.append(metric)
-            #if re.search(wtbsvr, row) is not None:
-            #    split_row = row.split()
-            #    metric = {"hth": split_row[0], "req": split_row[5], "resp": split_row[6], "curq": split_row[7], "tmoutq": split_row[9]}
-            #    metrics.append(metric)
         return metrics
 
 
@@ -69,11 +63,10 @@ class PromClient:
 
 if __name__ == "__main__":
     with open('wtb_exporter.yaml', 'r') as f:
-        conf = yaml.load(f, Loader=yaml.CLoader)
-    con = WebToBadminConnector(wtb_dir=conf["webtob_base_dir"], wtb_svr=conf["webtob_server_name"])
-    xptr = PromClient(con)
+        conf = yaml.safe_load(f)
+        con = WebToBadminConnector(wtb_dir=conf["webtob_base_dir"], wtb_svr=conf["webtob_server_name"])
+        xptr = PromClient(con)
 
     while True:
         xptr.get_value()
         time.sleep(3)
-
