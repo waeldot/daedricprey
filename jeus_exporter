@@ -6,12 +6,10 @@ built and tested on only JEUS7
 
 import subprocess
 import re
-import time
 import argparse
 import yaml
 import sys
 from time import sleep
-from socket import gethostname
 import prometheus_client as prom
 
 
@@ -80,7 +78,7 @@ class JeusExporter:
             # get thread status from filtered row
             thread_status_stdout = self.exec_cmd(cmd="'thread-info -server "+ms+" -li "+self.jeus_listener_name+" -os'").splitlines()
             for row in thread_status_stdout:
-                split_row = row.split('|'))
+                split_row = row.split('|')
                 if len(split_row) == 8 and split_row[1].strip() == "The number of threads.":
                     metric["thread_active"] += int(split_row[3])
                     metric["thread_blocked"] += int(split_row[5])

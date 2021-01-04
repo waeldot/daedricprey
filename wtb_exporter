@@ -62,7 +62,7 @@ class WebToBExporter:
     #        self.gauge_tmoutq.labels(frontend=self.wtb_svr, hostname=self.hostname, hth=row["hth"]).set(row["tmoutq"])
 
     def get_metric(self):
-        cmd_result_stdout = self.exec_cmd(cmd="si")
+        cmd_result_stdout = self.exec_cmd(subcmd="si")
         for row in cmd_result_stdout.splitlines():
             split_row = row.split()
             # rows are split into 13 values on webtob 4.1
