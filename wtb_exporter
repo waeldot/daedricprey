@@ -15,10 +15,10 @@ import prometheus_client as prom
 
 class WebtoBAdminConnector:
     """
-    use WebToB CLI tool 'wsadmin' to get data
+    use WebtoB CLI tool 'wsadmin' to get data
 
     this class takes two arguments below,
-     wtb_dir = webtobe base directory
+     wtb_dir = webtob base directory
      wtb_svr = webtob server, check server directive in http.m file
     """
     def __init__(self, wtb_dir, wtb_svr):
