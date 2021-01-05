@@ -1,2 +1,5 @@
+# absolute path to webtob installed base directory
 webtob_base_dir:
+
+# webtob server name in http.m file
 webtob_server_name:
