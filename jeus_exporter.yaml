@@ -1,5 +1,14 @@
+# path to jeus installed base directory
 jeus_base_dir:
+
+# name of jeus managed server that you want to monitor
 jeus_ms_name:
+
+# port of jeus admin server
 jeus_admin_port:
+
+# your own credntial script to log in to admin server automatically
 jeus_credential_path:
+
+# name of listener that is used to connec to web server
 jeus_listener_name:
