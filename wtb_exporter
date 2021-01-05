@@ -1,7 +1,7 @@
 #!/home/hisisJ/python3/bin/python3
 
 """
-built and tested on only WebToB4.1
+built and tested on only WebtoB 4.1
 """
 
 import subprocess
@@ -13,9 +13,13 @@ from socket import gethostname
 import prometheus_client as prom
 
 
-class WebToBadminConnector:
+class WebtoBAdminConnector:
     """
-    use WebToB CLI tool 'wsadmin' to get values
+    use WebToB CLI tool 'wsadmin' to get data
+
+    this class takes two arguments below,
+     wtb_dir = webtobe base directory
+     wtb_svr = webtob server, check server directive in http.m file
     """
     def __init__(self, wtb_dir, wtb_svr):
         self.wtb_svr = wtb_svr
@@ -26,15 +30,20 @@ class WebToBadminConnector:
         return cmd_result.stdout.decode("utf-8")
 
 
-class WebToBExporter:
+class WebtoBExporter:
     """
-    export metrics of current WebToB status
+    export metrics from current WebtoB status
+
+    this class takes two arguments below,
+     wtb_connect = WebtoBAdminConnector instance
+     listen_port = listening port of this exporter
     """
     def __init__(self, wtb_connect, listen_port):
         self.wtb_svr = wtb_connect.wtb_svr
         self.exec_cmd = wtb_connect.exec_cmd
         self.hostname = gethostname()
         # start client and set metric attributes
+        # this metric has 3 attributes
         self.gauge_req = prom.Gauge("wtb_http_requests", "number of http requests to webtob", ["webtob_server", "hostname", "http_handler"])
         self.gauge_resp = prom.Gauge("wtb_http_responses", "number of http responses to webtob", ["webtob_server", "hostname", "http_handler"])
         self.gauge_curq = prom.Gauge("wtb_http_current_queue_count", "number of waiting objects in a queue of webtob", ["webtob_server", "hostname", "http_handler"])
@@ -68,8 +77,8 @@ if __name__ == "__main__":
     except Exception as e:
         sys.exit(e)
 
-    wtbcon = WebToBadminConnector(wtb_dir=conf["webtob_base_dir"], wtb_svr=conf["webtob_server_name"])
-    xptr = WebToBExporter(wtbcon, listen_port)
+    wtbcon = WebtoBAdminConnector(wtb_dir=conf["webtob_base_dir"], wtb_svr=conf["webtob_server_name"])
+    xptr = WebtoBExporter(wtbcon, listen_port)
 
     while True:
         xptr.get_metric()
