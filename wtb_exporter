@@ -1,6 +1,4 @@
-"""
-built and tested on only WebtoB 4.1
-"""
+"""built and tested on only WebtoB 4.1"""
 
 import subprocess
 import yaml
@@ -19,6 +17,7 @@ class WebtoBAdminConnector:
      wtb_dir = webtob base directory
      wtb_svr = webtob server, check server directive in http.m file
     """
+    
     def __init__(self, wtb_dir, wtb_svr):
         self.wtb_svr = wtb_svr
         self.wtbcmd = "export WEBTOBDIR=" + wtb_dir + "; $WEBTOBDIR/bin/wsadmin -C "
@@ -36,6 +35,7 @@ class WebtoBExporter:
      wtb_connect = WebtoBAdminConnector instance
      listen_port = listening port of this exporter
     """
+    
     def __init__(self, wtb_connect, listen_port):
         self.wtb_svr = wtb_connect.wtb_svr
         self.exec_cmd = wtb_connect.exec_cmd
@@ -49,6 +49,11 @@ class WebtoBExporter:
         prom.start_http_server(listen_port)
 
     def get_metric(self):
+        """
+        get cli-format output then parse it
+        then put values into metric
+        """
+        
         cmd_result_stdout = self.exec_cmd(subcmd="si")
         for row in cmd_result_stdout.splitlines():
             split_row = row.split()
