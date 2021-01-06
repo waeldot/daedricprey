@@ -12,7 +12,6 @@ import prometheus_client as prom
 class WebtoBAdminConnector:
     """
     use WebtoB CLI tool 'wsadmin' to get data
-
     this class takes two arguments below,
      wtb_dir = webtob base directory
      wtb_svr = webtob server, check server directive in http.m file
@@ -30,7 +29,6 @@ class WebtoBAdminConnector:
 class WebtoBExporter:
     """
     export metrics from current WebtoB status
-
     this class takes two arguments below,
      wtb_connect = WebtoBAdminConnector instance
      listen_port = listening port of this exporter
