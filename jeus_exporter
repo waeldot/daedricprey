@@ -24,7 +24,7 @@ class JeusadminConnector:
     def __init__(self, jeus_base_dir, jeus_ms_name, jeus_admin_port, jeus_credential_path, jeus_listener_name):
         self.jeus_ms_name = jeus_ms_name
         self.jeus_listener_name = jeus_listener_name
-        self.jeuscmd = jeus_base_dir + "/bin/jeusadmin -host 127.0.0.1:" + jeus_admin_port + " -f " + jeus_base_dir +"/"+ jeus_credential_path + " "
+        self.jeuscmd = jeus_base_dir + "/bin/jeusadmin -host 127.0.0.1:" + jeus_admin_port + " -f " + jeus_base_dir + "/" + jeus_credential_path + " "
 
     def exec_cmd(self, cmd="help"):
         cmd_result = subprocess.run(self.jeuscmd + cmd, stdout=subprocess.PIPE, shell=True)
