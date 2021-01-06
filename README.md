@@ -1,6 +1,6 @@
 Personal Workspace for Prometheus Exporters.
 - WebtoB Exporter
-- JEUS EXporter
+- JEUS Exporter
 
 Two Exporters are built using CLI tools(wsadmin, jeusadmin).  
 Run CLI tool, Get Result as STDOUT then Parse It. 
