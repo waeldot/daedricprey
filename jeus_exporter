@@ -11,8 +11,7 @@ import prometheus_client as prom
 
 class JeusadminConnector:
     """
-    using JEUS CLI tool 'jeusadmin'
-    
+    using JEUS CLI tool 'jeusadmin'    
     this class takes 5 arguments below,
      jeus_base_dir = jeus base directory
      jeus_ms_name =  name of jeus managed server
@@ -33,8 +32,7 @@ class JeusadminConnector:
 
 class JeusExporter:
     """
-    export metrics of current JEUS status
-    
+    export metrics of current JEUS status    
     this class takes 1 argument below,
      jeus_connect = instance of JeusadminConnector
     """
@@ -71,8 +69,8 @@ class JeusExporter:
                 elif re.match(r'FAILED', row) is not None:
                     state = 3
                 else:
-                   # for other states
-                   pass
+                    # for other states
+                    pass
             metric["state"] = state
             
             # get cpu, memory usage from filtered row
