@@ -53,8 +53,7 @@ class WebtoBExporter:
         get cli-format output then parse it
         then put values into metric
         """
-        
-        cmd_result_stdout = self.exec_cmd(subcmd="si")
+        cmd_result_stdout = self.exec_cmd(subcmd="'svrinfo " + self.wtb_svr + "'")
         for row in cmd_result_stdout.splitlines():
             split_row = row.split()
             # rows are split into 13 values on webtob 4.1
