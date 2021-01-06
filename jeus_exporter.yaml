@@ -1,8 +1,9 @@
 # path to jeus installed base directory
 jeus_base_dir:
 
-# name of jeus managed server that you want to monitor
+# names of jeus managed server that you want to monitor
 jeus_ms_name:
+  - 
 
 # port of jeus admin server
 jeus_admin_port:
