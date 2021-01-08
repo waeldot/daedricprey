@@ -35,9 +35,10 @@ class JeusExporter:
     export metrics of current JEUS status    
     this class takes 1 argument below,
      jeus_connect = instance of JeusadminConnector
+     listen_port = listening port of jeus exporter
     """
     
-    def __init__(self, jeus_connect):
+    def __init__(self, jeus_connect, listen_port):
         self.jeus_ms_name = jeus_connect.jeus_ms_name
         self.jeus_listener_name = jeus_connect.jeus_listener_name
         self.exec_cmd = jeus_connect.exec_cmd
@@ -47,7 +48,7 @@ class JeusExporter:
         self.gauge_heap = prom.Gauge("jeus_ms_heap_usage_percent", "heap memory usage of jeus managed server", ["jeus_ms"])
         self.gauge_thread_active = prom.Gauge("jeus_active_thread_count", "active thread count of jeus managed server", ["jeus_ms"])
         self.gauge_thread_blocked = prom.Gauge("jeus_blocked_thread_count", "blocked thread count of jeus managed server", ["jeus_ms"])
-        prom.start_http_server(9102)
+        prom.start_http_server(listen_port)
 
     def get_metric(self):
         """
@@ -119,7 +120,7 @@ if __name__ == "__main__":
 
     jeuscon = JeusadminConnector(jeus_base_dir=conf["jeus_base_dir"], jeus_ms_name=conf["jeus_ms_name"], jeus_admin_port=conf["jeus_admin_port"],
                                  jeus_credential_path=conf["jeus_credential_path"], jeus_listener_name=conf["jeus_listener_name"])
-    xptr = JeusExporter(jeuscon)
+    xptr = JeusExporter(jeuscon, listen_port)
 
     while True:
         xptr.get_metric()
