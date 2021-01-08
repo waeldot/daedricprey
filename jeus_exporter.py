@@ -124,4 +124,4 @@ if __name__ == "__main__":
 
     while True:
         xptr.get_metric()
-        sleep(60)
+
