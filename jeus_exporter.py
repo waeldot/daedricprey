@@ -57,6 +57,8 @@ class JeusExporter:
         """     
         for ms in self.jeus_ms_name:
             metric = {"state": "", "cpu": 0, "heap": 0, "thread_active": 0, "thread_blocked": 0}
+            # pseudo ms state for initialization
+            state = 9 
             
             # get jeus managed server state
             ms_state_stdout = self.exec_cmd(cmd="'server-info -server " + ms +" -state'")
