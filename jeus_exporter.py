@@ -15,15 +15,15 @@ class JeusadminConnector:
     this class takes 5 arguments below,
      jeus_base_dir = jeus base directory
      jeus_ms_name =  name of jeus managed server
-     jeus_admin_port = port of jeus admin server 
+     jeus_admin_socket = ip,port of jeus admin server 
      jeus_credential_path = credential script to log in to admin server autoamatically
      jeus_listener_name = name of jeus listener for web connection
     """
     
-    def __init__(self, jeus_base_dir, jeus_ms_name, jeus_admin_port, jeus_credential_path, jeus_listener_name):
+    def __init__(self, jeus_base_dir, jeus_ms_name, jeus_admin_socket, jeus_credential_path, jeus_listener_name):
         self.jeus_ms_name = jeus_ms_name
         self.jeus_listener_name = jeus_listener_name
-        self.jeuscmd = jeus_base_dir + "/bin/jeusadmin -host 127.0.0.1:" + jeus_admin_port + " -f " + jeus_base_dir + "/" + jeus_credential_path + " "
+        self.jeuscmd = jeus_base_dir + "/bin/jeusadmin -host " + jeus_admin_socket + " -f " + jeus_base_dir + "/" + jeus_credential_path + " "
 
     def exec_cmd(self, cmd="help"):
         cmd_result = subprocess.run(self.jeuscmd + cmd, stdout=subprocess.PIPE, shell=True)
@@ -118,10 +118,10 @@ if __name__ == "__main__":
     except Exception as e:
         sys.exit(e)
 
-    jeuscon = JeusadminConnector(jeus_base_dir=conf["jeus_base_dir"], jeus_ms_name=conf["jeus_ms_name"], jeus_admin_port=conf["jeus_admin_port"],
+    jeuscon = JeusadminConnector(jeus_base_dir=conf["jeus_base_dir"], jeus_ms_name=conf["jeus_ms_name"], jeus_admin_socket=conf["jeus_admin_socket"],
                                  jeus_credential_path=conf["jeus_credential_path"], jeus_listener_name=conf["jeus_listener_name"])
     xptr = JeusExporter(jeuscon, listen_port)
 
     while True:
         xptr.get_metric()
-
+        sleep(3)

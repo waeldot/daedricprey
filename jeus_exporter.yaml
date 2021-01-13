@@ -6,7 +6,7 @@ jeus_ms_name:
   - 
 
 # port of jeus admin server
-jeus_admin_port:
+jeus_admin_socket:
 
 # your own credntial script to log in to admin server automatically
 jeus_credential_path:
