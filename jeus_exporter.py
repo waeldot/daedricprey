@@ -16,7 +16,7 @@ class JeusadminConnector:
      jeus_base_dir = jeus base directory
      jeus_ms_name =  name of jeus managed server
      jeus_admin_socket = ip,port of jeus admin server
-     jeus_credential_path = credential script to log in to admin server autoamatically
+     jeus_credential_path = credential script to log in to admin
      jeus_listener_name = name of jeus listener for web connection
     """
 
@@ -32,12 +32,12 @@ class JeusadminConnector:
 
 class JeusExporter:
     """
-    export metrics of current JEUS status    
+    export metrics of current JEUS status
     this class takes 1 argument below,
      jeus_connect = instance of JeusadminConnector
      listen_port = listening port of jeus exporter
     """
-    
+
     def __init__(self, jeus_connect, listen_port):
         self.jeus_ms_name = jeus_connect.jeus_ms_name
         self.jeus_listener_name = jeus_connect.jeus_listener_name
@@ -54,7 +54,7 @@ class JeusExporter:
         """
         get cli-format output then parse it
         then put values into metric
-        """     
+        """
         for ms in self.jeus_ms_name:
             metric = {"state": "", "cpu": 0, "heap": 0, "thread_active": 0, "thread_blocked": 0}
 
@@ -87,7 +87,7 @@ class JeusExporter:
                 split_row = row.split('|')
                 if len(split_row) == 4 and split_row[1].strip() == "Current Used Heap Memory Ratio":
                     metric["heap"] = round(100-float(split_row[2].split()[0].strip()), 1)
-                    
+
             # get thread status from filtered row
             thread_status_stdout = self.exec_cmd(cmd="'thread-info -server " + ms + " -li " + self.jeus_listener_name + " -os'").splitlines()
             for row in thread_status_stdout:
@@ -96,7 +96,7 @@ class JeusExporter:
                 if len(split_row) == 8 and split_row[1].strip() == "The number of threads.":
                     metric["thread_active"] += int(split_row[3])
                     metric["thread_blocked"] += int(split_row[5])
-                    
+
             self.gauge_state.labels(jeus_ms=ms).set(metric["state"])
             self.gauge_cpu.labels(jeus_ms=ms).set(metric["cpu"])
             self.gauge_heap.labels(jeus_ms=ms).set(metric["heap"])

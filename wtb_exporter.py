@@ -16,7 +16,7 @@ class WebtoBAdminConnector:
      wtb_dir = webtob base directory
      wtb_svr = webtob server, check server directive in http.m file
     """
-    
+
     def __init__(self, wtb_dir, wtb_svr):
         self.wtb_svr = wtb_svr
         self.wtbcmd = "export WEBTOBDIR=" + wtb_dir + "; $WEBTOBDIR/bin/wsadmin -C "
@@ -33,7 +33,7 @@ class WebtoBExporter:
      wtb_connect = WebtoBAdminConnector instance
      listen_port = listening port of this exporter
     """
-    
+
     def __init__(self, wtb_connect, listen_port):
         self.wtb_svr = wtb_connect.wtb_svr
         self.exec_cmd = wtb_connect.exec_cmd
@@ -83,4 +83,3 @@ if __name__ == "__main__":
     while True:
         xptr.get_metric()
         sleep(3)
-
