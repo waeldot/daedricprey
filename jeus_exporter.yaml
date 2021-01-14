@@ -5,7 +5,7 @@ jeus_base_dir:
 jeus_ms_name:
   - 
 
-# port of jeus admin server
+# ip,port of jeus admin server
 jeus_admin_socket:
 
 # your own credntial script to log in to admin server automatically
