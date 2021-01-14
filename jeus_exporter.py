@@ -60,18 +60,18 @@ class JeusExporter:
 
             # get jeus managed server state
             ms_state_stdout = self.exec_cmd(cmd="'server-info -server " + ms +" -state'")
-            for row in ms_state_stdout.splitlines():
-                if re.match(r'SHUTDOWN', row) is not None:
-                    state = 0
-                elif re.match(r'RUNNING',row) is not None:
-                    state = 1
-                elif re.match(r'STANDBY', row) is not None:
-                    state = 2
-                elif re.match(r'FAILED', row) is not None:
-                    state = 3
-                else:
-                    # for other states
-                    state = 5
+            value_from_stdout = ms_state_stdout.splitlines()[-2]
+            if re.match(r'SHUTDOWN', value_from_stdout) is not None:
+                state = 0
+            elif re.match(r'RUNNING', value_from_stdout) is not None:
+                state = 1
+            elif re.match(r'STANDBY', value_from_stdout) is not None:
+                state = 2
+            elif re.match(r'FAILED', value_from_stdout) is not None:
+                state = 3
+            else:
+                # for other states
+                state = 5
             metric["state"] = state
 
             # get cpu, memory usage from filtered row
