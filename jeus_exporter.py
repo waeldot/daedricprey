@@ -33,7 +33,7 @@ class JeusadminConnector:
 class JeusExporter:
     """
     export metrics of current JEUS status
-    this class takes 1 argument below,
+    this class takes 2 arguments below,
      jeus_connect = instance of JeusadminConnector
      listen_port = listening port of jeus exporter
     """
