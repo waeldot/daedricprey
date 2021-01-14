@@ -11,15 +11,15 @@ import prometheus_client as prom
 
 class JeusadminConnector:
     """
-    using JEUS CLI tool 'jeusadmin'    
+    using JEUS CLI tool 'jeusadmin'
     this class takes 5 arguments below,
      jeus_base_dir = jeus base directory
      jeus_ms_name =  name of jeus managed server
-     jeus_admin_socket = ip,port of jeus admin server 
+     jeus_admin_socket = ip,port of jeus admin server
      jeus_credential_path = credential script to log in to admin server autoamatically
      jeus_listener_name = name of jeus listener for web connection
     """
-    
+
     def __init__(self, jeus_base_dir, jeus_ms_name, jeus_admin_socket, jeus_credential_path, jeus_listener_name):
         self.jeus_ms_name = jeus_ms_name
         self.jeus_listener_name = jeus_listener_name
@@ -57,9 +57,7 @@ class JeusExporter:
         """     
         for ms in self.jeus_ms_name:
             metric = {"state": "", "cpu": 0, "heap": 0, "thread_active": 0, "thread_blocked": 0}
-            # pseudo ms state for initialization
-            state = 9 
-            
+
             # get jeus managed server state
             ms_state_stdout = self.exec_cmd(cmd="'server-info -server " + ms +" -state'")
             for row in ms_state_stdout.splitlines():
@@ -73,9 +71,9 @@ class JeusExporter:
                     state = 3
                 else:
                     # for other states
-                    pass
+                    state = 5
             metric["state"] = state
-            
+
             # get cpu, memory usage from filtered row
             cpu_usage_stdout = self.exec_cmd(cmd="'system-info --cpu " + ms + "'")
             for row in cpu_usage_stdout.splitlines():
